@@ -32,14 +32,14 @@ import java.util.List;
 public class StockTaskSchedule {
 
     // 매일 오후 13시00분 - 13시 59분 사이에 1분 간격 으로 실행
-    //@Scheduled(cron = "0 0/1 13 * * *")
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(cron = "0 0/1 21 * * *")
+    //@Scheduled(fixedRate = 60000)
     public void takeTarget(){
         // 1. 해당 시간마다 스케줄러 돌리기
-        //String todayTime = LocalDateTime.now().minusDays(3).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        //String yesterdayTime = LocalDateTime.now().minusDays(4).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        String todayTime = "202011060902";
-        String yesterdayTime = "202011050902";
+        String todayTime = LocalDateTime.now().minusMinutes(6450).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        String yesterdayTime = LocalDateTime.now().minusMinutes(7890).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        //String todayTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        //String yesterdayTime = LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
 
         System.out.println("====********============The current todayTime : " + todayTime);
         System.out.println("====********============The current yesterdayTime : " + yesterdayTime);
@@ -83,10 +83,8 @@ public class StockTaskSchedule {
             Elements tableList = doc.select("table.type2");
             for (Element table : tableList) {
                 Elements rowList = table.select("tr:gt(0)");
-                for (Element element : rowList) {
-                    Elements cellList = rowList.select("td");
-                    curMessage = " " + stockEvent.getName() + " 체결시간 = " + cellList.get(1).text() + " 체결가 = " + cellList.get(5).text() + " 거래량 = " +cellList.get(6).text();
-                }
+                curMessage = rowList.get(1).text();
+                //System.out.println("curMessage = " + curMessage);
             }
 
             // 2. 어제 시간 관련 로직
@@ -97,28 +95,43 @@ public class StockTaskSchedule {
                 e.printStackTrace();
             }
             Elements tableList2 = doc.select("table.type2");
-            for (Element table : tableList) {
+            for (Element table : tableList2) {
                 Elements rowList = table.select("tr:gt(0)");
-                for (Element element : rowList) {
-                    Elements cellList = rowList.select("td");
-                    prevMessage = " " + stockEvent.getName() + " 체결시간 = " + cellList.get(1).text() + " 체결가 = " + cellList.get(2).text() + " 거래량 = " +cellList.get(6).text();
+                prevMessage = rowList.get(1).text();
+                //System.out.println("prevMessage = " + prevMessage);
+            }
+            
+            // 3. 어제와 오늘의 거래량 비교
+            String[] curMessages = curMessage.split(" ");
+            String[] prevMessages = prevMessage.split(" ");
+
+            if (prevMessages.length > 0 && curMessages.length > 0 ){
+                if (prevMessages[5].length() > 1 && curMessages[5].length() > 1){
+                    int tradeVolume = Integer.parseInt(curMessages[5].replace(",","")) - Integer.parseInt(prevMessages[5].replace(",",""));
+                    if (tradeVolume > 0 ){
+                        // 3. 원하는 값을 추출해서 해당 값이 조건에 맞다면
+                        // 조건 1. 전일 9시 거래량이 오늘 9시 거래량보다 많다
+                        // 조건 2. 어제 마감된 가격이...
+                        // 아 모르겠고 일단 현재의 가격이 어제 거래량 보다 높을 때
+                        // 해당 사항을 만족한다면 슬랙으로 해당 내용을 푸시함
+                        TelegramBot bot = new TelegramBot(":-");
+
+                        SendMessage request = new SendMessage("",
+                                 "*====="+ stockEvent.getName()+"(" + stockEvent.getStock_id() + ") =====" + "\n" +
+                                      "*                체결시간 / 체결가 / 전일비 / 매도 / 매수 / 거래량 / 변동량  " + "\n" +
+                                      "* 오늘     : " + " "+curMessage + "\n" +
+                                      "* 하루 전 : " + " "+prevMessage + "\n" +
+                                      "* 거래량 차이 : +" + Integer.toString(tradeVolume))
+                                .parseMode(ParseMode.HTML)
+                                .disableWebPagePreview(true)
+                                .disableNotification(false);
+
+                        SendResponse sendResponse = bot.execute(request);
+                        boolean ok = sendResponse.isOk();
+                        Message message = sendResponse.message();
+                    }
                 }
             }
-
-            // 3. 원하는 값을 추출해서 해당 값이 조건에 맞다면
-            // 조건 1. 전일 9시 거래량이 오늘 9시 거래량보다 많다
-            // 조건 2. 어제 마감된 가격이...
-            // 아 모르겠고 일단 현재의 가격이 어제 거래량 보다 높을 때
-            // 해당 사항을 만족한다면 슬랙으로 해당 내용을 푸시함
-
-
-                    .parseMode(ParseMode.HTML)
-                    .disableWebPagePreview(true)
-                    .disableNotification(false);
-
-            SendResponse sendResponse = bot.execute(request);
-            boolean ok = sendResponse.isOk();
-            Message message = sendResponse.message();
         }
     }
 }
