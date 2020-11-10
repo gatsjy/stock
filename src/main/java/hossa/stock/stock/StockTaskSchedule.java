@@ -146,9 +146,7 @@ public class StockTaskSchedule {
                         if(curMessages[1].length() > 1 && prevLastMessages[5].length() > 1){
                             int priceVolume = Integer.parseInt(curMessages[1].replace(",","")) - Integer.parseInt(prevLastMessages[1].replace(",",""));
                             if(priceVolume > 0){
-                                TelegramBot bot = new TelegramBot("1308465026:AAHOrMFyULrupxEnhkPIsNjGJ0o-4uF0q7U");
 
-                                SendMessage request = new SendMessage("729845849",
                                         "*====="+ stockEvent.getName()+"(" + stockEvent.getStock_id() + ") =====" + "\n" +
                                                 "*                체결시간 / 체결가 / 전일비 / 매도 / 매수 / 거래량 / 변동량  " + "\n" +
                                                 "* 오늘     : " + " "+curMessage + "\n" +
