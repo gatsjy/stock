@@ -19,9 +19,10 @@ class StockApplicationTests {
 
 	@Test
 	public void sendMsgTest(){
-		TelegramBot bot = new TelegramBot("1308465026:AAHOrMFyULrupxEnhkPIsNjGJ0o-4uF0q7U");
+/*
+		TelegramBot bot = new TelegramBot("");
 
-		SendMessage request = new SendMessage("729845849", "wtf!!! hello bot!!")
+		SendMessage request = new SendMessage("", "wtf!!! hello bot!!")
 				.parseMode(ParseMode.HTML)
 				.disableWebPagePreview(true)
 				.disableNotification(false);
@@ -29,6 +30,7 @@ class StockApplicationTests {
 		SendResponse sendResponse = bot.execute(request);
 		boolean ok = sendResponse.isOk();
 		Message message = sendResponse.message();
+*/
 
 	}
 
