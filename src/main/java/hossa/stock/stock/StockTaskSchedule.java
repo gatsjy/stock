@@ -34,8 +34,8 @@ public class StockTaskSchedule {
     @Scheduled(fixedRate = 60000)
     public void takeTarget(){
         // 1. 해당 시간마다 스케줄러 돌리기
-        String todayTime = LocalDateTime.now().minusMinutes(6450).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        String yesterdayTime = LocalDateTime.now().minusMinutes(7890).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        String todayTime = LocalDateTime.now().minusMinutes(7890).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        String yesterdayTime = LocalDateTime.now().minusMinutes(9330).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
         //String todayTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
         //String yesterdayTime = LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
 
@@ -2527,11 +2527,10 @@ public class StockTaskSchedule {
                     int tradeVolume = Integer.parseInt(curMessages[5].replace(",","")) - Integer.parseInt(prevMessages[5].replace(",",""));
                     if (tradeVolume > 0 ){
                         // 2. 조건 2. 전일 종가(15시30분) < 금일 9시 00분 종가
-                        if(curMessages[1].length() > 1 && prevLastMessages[5].length() > 1){
+    /*                    if(curMessages[1].length() > 1 && prevLastMessages[1].length() > 1){
                             int priceVolume = Integer.parseInt(curMessages[1].replace(",","")) - Integer.parseInt(prevLastMessages[1].replace(",",""));
-                            if(priceVolume > 0){
+                            if( priceVolume > 0){
                                 TelegramBot bot = new TelegramBot("1308465026:AAHOrMFyULrupxEnhkPIsNjGJ0o-4uF0q7U");
-
                                 SendMessage request = new SendMessage("729845849",
                                         "*====="+ stockEvent.getName()+"(" + stockEvent.getStock_id() + ") =====" + "\n" +
                                                 "*                체결시간 / 체결가 / 전일비 / 매도 / 매수 / 거래량 / 변동량  " + "\n" +
@@ -2548,7 +2547,24 @@ public class StockTaskSchedule {
                                 boolean ok = sendResponse.isOk();
                                 Message message = sendResponse.message();
                             }
-                        }
+                        }*/
+
+                        TelegramBot bot = new TelegramBot("1308465026:AAHOrMFyULrupxEnhkPIsNjGJ0o-4uF0q7U");
+                        SendMessage request = new SendMessage("729845849",
+                                "*====="+ stockEvent.getName()+"(" + stockEvent.getStock_id() + ") =====" + "\n" +
+                                        "*                체결시간 / 체결가 / 전일비 / 매도 / 매수 / 거래량 / 변동량  " + "\n" +
+                                        "* 오늘     : " + " "+curMessage + "\n" +
+                                        "* 하루 전 : " + " "+prevMessage + "\n" +
+                                        "* 하루 전 종가 : "+ " " +prevLastMessage + "\n" +
+                                        "* 조건 1. 전일 9시00분 거리랭 < 금일 9시 00분 거래량 : +" + Integer.toString(tradeVolume) + "\n" )
+                                        //"* 조건 2. 전일 종가(15시30분) < 금일 9시 00분 종가 : +" + Integer.toString(priceVolume))
+                                .parseMode(ParseMode.HTML)
+                                .disableWebPagePreview(true)
+                                .disableNotification(false);
+
+                        SendResponse sendResponse = bot.execute(request);
+                        boolean ok = sendResponse.isOk();
+                        Message message = sendResponse.message();
                     }
                 }
             }
