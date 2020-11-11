@@ -34,10 +34,10 @@ public class StockTaskSchedule {
     @Scheduled(fixedRate = 60000)
     public void takeTarget(){
         // 1. 해당 시간마다 스케줄러 돌리기
-        //String todayTime = LocalDateTime.now().minusMinutes(6450).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        //String yesterdayTime = LocalDateTime.now().minusMinutes(7890).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        String todayTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        String yesterdayTime = LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        String todayTime = LocalDateTime.now().minusMinutes(6450).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        String yesterdayTime = LocalDateTime.now().minusMinutes(7890).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        //String todayTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        //String yesterdayTime = LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
 
         System.out.println("====********============The current todayTime : " + todayTime);
         System.out.println("====********============The current yesterdayTime : " + yesterdayTime);
