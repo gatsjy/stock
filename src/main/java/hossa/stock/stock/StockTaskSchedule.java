@@ -31,13 +31,15 @@ public class StockTaskSchedule {
 
     // 매일 오후 9시00분 - 9시 59분 사이에 10분 간격 으로 실행
     //@Scheduled(cron = "0 0/10 9 * * *")
-    //@Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 600000)
     public void takeTarget(){
         // 1. 해당 시간마다 스케줄러 돌리기
-        String todayTime = LocalDateTime.now().minusMinutes(5010).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        String yesterdayTime = LocalDateTime.now().minusMinutes(6450).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        //String todayTime = LocalDateTime.now().minusMinutes(5010).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        //String yesterdayTime = LocalDateTime.now().minusMinutes(6450).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
         //String todayTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-        //String yesterdayTime = LocalDateTime.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        //String yesterdayTime = LocalDateTime.now().minusDays(3).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        String todayTime = LocalDateTime.now().minusHours(12).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
+        String yesterdayTime = LocalDateTime.now().minusHours(84).format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
 
         System.out.println("====********============The current todayTime : " + todayTime);
         System.out.println("====********============The current yesterdayTime : " + yesterdayTime);
@@ -1577,30 +1579,35 @@ public class StockTaskSchedule {
             String[] prevLastMessages = prevLastMessage.split(" ");
 
             if (prevMessages.length > 0 && curMessages.length > 0 && prevLastMessages.length > 0){
-                // 1. 조건 1. 전일 9시00분 거리랭 < 금일 9시 00분 거래량
-                if (prevMessages[5].length() > 1 && curMessages[5].length() > 1){
-                    int tradeVolume = Integer.parseInt(curMessages[5].replace(",","")) - Integer.parseInt(prevMessages[5].replace(",",""));
-                    if (tradeVolume > 0 ){
-                        // 2. 조건 2. 전일 종가(15시30분) < 금일 9시 00분 종가
-                        if(curMessages[1].length() > 1 && prevLastMessages[1].length() > 1){
-                            int priceVolume = Integer.parseInt(curMessages[1].replace(",","")) - Integer.parseInt(prevLastMessages[1].replace(",",""));
-                            if( priceVolume > 0){
-                                TelegramBot bot = new TelegramBot("1308465026:AAHOrMFyULrupxEnhkPIsNjGJ0o-4uF0q7U");
-                                SendMessage request = new SendMessage("729845849",
-                                        "*====="+ stockEvent.getName()+"(" + stockEvent.getStock_id() + ") =====" + "\n" +
-                                            "*                체결시간 / 체결가 / 전일비 / 매도 / 매수 / 거래량 / 변동량  " + "\n" +
-                                            "* 오늘     : " + " "+curMessage + "\n" +
-                                            "* 하루 전 : " + " "+prevMessage + "\n" +
-                                            "* 하루 전 종가 : "+ " " +prevLastMessage + "\n" +
-                                            "* 조건 1 거래량 : +" + Integer.toString(tradeVolume) + "\n" +
-                                            "* 조건 2 금일 첫번째 가격 - 하루 전 종가: +" + Integer.toString(priceVolume))
-                                        .parseMode(ParseMode.HTML)
-                                        .disableWebPagePreview(true)
-                                        .disableNotification(false);
+                if(curMessages[1].length() > 1){
+                    // 3. 조건 3. 동전 주 제외 (1000원 미만)
+                    if(Integer.parseInt(curMessages[1].replace(",","")) > 1000){
+                        // 1. 조건 1. 전일 9시00분 거리랭 < 금일 9시 00분 거래량
+                        if (prevMessages[5].length() > 1 && curMessages[5].length() > 1){
+                            int tradeVolume = Integer.parseInt(curMessages[5].replace(",","")) - Integer.parseInt(prevMessages[5].replace(",",""));
+                            if (tradeVolume > 0){
+                                // 2. 조건 2. 전일 종가(15시30분 -> 정확히 3시 30분 것) < 금일 9시 00분 종가
+                                if(curMessages[1].length() > 1 && prevLastMessages[1].length() > 1){
+                                    int priceVolume = Integer.parseInt(curMessages[1].replace(",","")) - Integer.parseInt(prevLastMessages[1].replace(",",""));
+                                    if( priceVolume > 0){
+                                        TelegramBot bot = new TelegramBot("1308465026:AAHOrMFyULrupxEnhkPIsNjGJ0o-4uF0q7U");
+                                        SendMessage request = new SendMessage("-1001360628906",  // 1482752423(기찬) , 729845849(한주안), -1001360628906 (호싸 그룹)
+                                                "*====="+ stockEvent.getName()+"(" + stockEvent.getStock_id() + ") =====" + "\n" +
+                                                        "*                체결시간 / 체결가 / 전일비 / 매도 / 매수 / 거래량 / 변동량  " + "\n" +
+                                                        "* 오늘     : " + " "+curMessage + "\n" +
+                                                        "* 하루 전 : " + " "+prevMessage + "\n" +
+                                                        "* 하루 전 종가 : "+ " " +prevLastMessage + "\n" +
+                                                        "* 조건 1 거래량 : +" + Integer.toString(tradeVolume) + "\n" +
+                                                        "* 조건 2 금일 첫번째 가격 - 하루 전 종가: +" + Integer.toString(priceVolume))
+                                                .parseMode(ParseMode.HTML)
+                                                .disableWebPagePreview(true)
+                                                .disableNotification(false);
 
-                                SendResponse sendResponse = bot.execute(request);
-                                boolean ok = sendResponse.isOk();
-                                Message message = sendResponse.message();
+                                        SendResponse sendResponse = bot.execute(request);
+                                        boolean ok = sendResponse.isOk();
+                                        Message message = sendResponse.message();
+                                    }
+                                }
                             }
                         }
                     }
